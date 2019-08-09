@@ -5,7 +5,6 @@ require 'fluent/plugin/out_elasticsearch'
 require 'aws-sdk-core'
 require 'faraday_middleware/aws_sigv4'
 
-
 module Fluent::Plugin
   class AwsElasticsearchServiceOutput < ElasticsearchOutput
 
@@ -27,6 +26,16 @@ module Fluent::Plugin
     # error repeating forever. See this discussion for details:
     # https://discuss.elastic.co/t/elasitcsearch-ruby-raises-cannot-get-new-connection-from-pool-error/36252
     config_set_default :reload_connections, false
+
+    #
+    # @override
+    # Use a global scope to fix the following due to redefining the ElasticsearchOutput class below:
+    # #0 unexpected error error_class=NameError error="uninitialized constant Fluent::Plugin::ElasticsearchOutput::Elasticsearch::VERSION"
+    # Actual fix is probably to rewrite the bottom bit not to override Elasticsearch transport library methods
+    #
+    def client_library_version
+      ::Elasticsearch::VERSION
+    end
 
     #
     # @override
